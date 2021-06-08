@@ -26,7 +26,7 @@ jobs:
     - name: generate pdf
       uses: xu-cheng/latex-action@2.2.1
       with:
-        root_file: output/generated.tex
+        root_file: generated.tex
         working_directory: output
 
     - name: upload artifact
