@@ -27,6 +27,7 @@ jobs:
       uses: xu-cheng/latex-action@2.2.1
       with:
         root_file: output/generated.tex
+        working_directory: output
 
     - name: upload artifact
       uses: actions/upload-artifact@v2
