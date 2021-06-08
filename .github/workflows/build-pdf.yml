@@ -1,0 +1,36 @@
+name: building
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: git checkout
+      uses: actions/checkout@v2
+
+    - name: setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+
+    - name: install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: generate tex
+      run: python generator.py tim0-12432
+
+    - name: generate pdf
+      uses: xu-cheng/latex-action@2.2.1
+        with:
+          root_file: output/generated.tex
+
+    - name: upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: summary_tim0-12432
+          path: output/generated.pdf
+          if-no-files-found: error
