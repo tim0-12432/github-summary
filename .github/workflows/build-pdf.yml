@@ -29,8 +29,8 @@ jobs:
         root_file: output/generated.tex
 
     - name: upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: summary_tim0-12432
-          path: output/generated.pdf
-          if-no-files-found: error
+      uses: actions/upload-artifact@v2
+      with:
+        name: summary_tim0-12432
+        path: output/generated.pdf
+        if-no-files-found: error
