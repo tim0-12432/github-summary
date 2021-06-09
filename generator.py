@@ -7,7 +7,9 @@ from dateutil import parser
 import subprocess
 import logging
 import argparse
-from pylatex import Document, Command, TextColor, NewLine
+import matplotlib
+import matplotlib.pyplot as plt
+from pylatex import Document, Command, TextColor, NewLine, Figure, NoEscape
 from pylatex.base_classes.command import Options
 from pylatex.base_classes.latex_object import LatexObject
 from pylatex.package import Package
@@ -16,6 +18,8 @@ from pylatex.table import Tabular
 from pylatex.utils import bold
 from pylatex.lists import Itemize
 from text_snippets import intro, projects
+
+matplotlib.use("Agg")
 
 with open(f"{os.path.dirname(os.path.abspath(__file__))}/config.json", "r") as file:
     config = json.load(file)
@@ -190,6 +194,12 @@ class DocBuilder:
                 with self.document.create(Itemize()) as list:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
+                with self.document.create(Figure(position="htbp")) as plot:
+                    plt.plot([lang for lang in languages.keys()], [lang for lang in languages.values()])
+                    plt.ylabel("Code in bytes")
+                    plt.xlabel("Language")
+                    plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
+                    plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
@@ -288,4 +298,4 @@ def main():
     builder.generate_tex_file()
 
 if __name__ == '__main__':
-    main()
+    example()
