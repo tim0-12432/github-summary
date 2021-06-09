@@ -202,12 +202,12 @@ class DocBuilder:
                 with self.document.create(Itemize()) as list:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
-                # if len(languages) > 0:
-                #     with self.document.create(Figure(position="htbp")) as plot:
-                #         bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
-                #         bars.set(xlabel="Language", ylabel="Code in bytes")
-                #         plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
-                #         plot.add_caption("Language distribution")
+                if len(languages) > 0:
+                    with self.document.create(Figure(position="htbp")) as plot:
+                        bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
+                        bars.set(xlabel="Language", ylabel="Code in bytes")
+                        plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
+                        plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
@@ -252,11 +252,10 @@ class DocBuilder:
         other_languages = other_languages.replace(",", ", ")[:-2]
         with self.document.create(Section(repo["name"])):
             with self.document.create(Subsection("Statistics")):
-                self.document.append(CommandBaseBasic(f"\\faStar {get_amount(repo['stars'])}\t\\faEye {get_amount(repo['watchers'])}\t\\faShareAlt {get_amount(repo['forks'])}\t\\faDatabase {get_size(repo['size'])}\t{repo['license']}"))
+                self.document.append(CommandBaseBasic(f"\\faStar {get_amount(repo['stars'])}\t\\faEye {get_amount(repo['watchers'])}\t\\faShareAlt {get_amount(repo['forks'])}\t\\faDatabase {get_size(repo['size'])}\t{repo['license']}\n\n"))
             with self.document.create(Subsection("Description")):
                 self.document.append(repo["description"])
                 self.document.append(CommandBaseBasic(f"\\footnote{{{repo['url']}}}"))
-                self.document.append(TextColor("gray", f"since {repo['created']}"))
             if len(repo["languages"]) > 0:
                 with self.document.create(Subsection("Languages")):
                     with self.document.create(Tabular("l l")) as table:
