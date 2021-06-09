@@ -14,6 +14,9 @@ parameters:
 - `-i, --intervall`: Sets intervall. `YEAR` or `MONTH`, default is year
 - `-e, --endtime`: Sets endpoint. `TODAY` or specific datetime int e.g. `64853273685726`, default is today
 
+The generator will put a .tex file in the output folder.
+This could be converted to a pdf by using e.g [MiKTex](https://miktex.org/), [Overleaf](https://de.overleaf.com/), [latexbase](https://latexbase.com/), etc.
+
 ## Known issues
 
 

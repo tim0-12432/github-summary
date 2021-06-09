@@ -11,7 +11,7 @@ import argparse
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pylatex import Document, Command, TextColor, NewLine, Figure, NoEscape
+from pylatex import Document, Command, TextColor, LineBreak, Figure, NoEscape
 from pylatex.base_classes.command import Options
 from pylatex.base_classes.latex_object import LatexObject
 from pylatex.package import Package
@@ -86,7 +86,7 @@ class Api:
         if self.rate_limit > 0:
             request = requests.get(url)
             self.rate_limit = int(request.headers.get("x-ratelimit-remaining"))
-            logger.debug(request.url, request.status_code)
+            logger.debug(f"{request.url}, {request.status_code}")
             if request.status_code == 403:
                 logger.error(f"Wait until {datetime.datetime.utcfromtimestamp(int(request.headers.get('x-ratelimit-reset'))).strftime('%Y/%m/%d %H:%M:%S')} UTC to send new requests!")
             return request.json()
@@ -256,7 +256,7 @@ class DocBuilder:
             with self.document.create(Subsection("Description")):
                 self.document.append(repo["description"])
                 self.document.append(CommandBaseBasic(f"\\footnote{{{repo['url']}}}"))
-                self.document.append(NewLine())
+                self.document.append(LineBreak())
                 self.document.append(TextColor("gray", f"since {repo['created']}"))
             if len(repo["languages"]) > 0:
                 with self.document.create(Subsection("Languages")):
