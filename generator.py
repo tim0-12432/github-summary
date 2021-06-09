@@ -298,4 +298,4 @@ def main():
     builder.generate_tex_file()
 
 if __name__ == '__main__':
-    example()
+    main()
