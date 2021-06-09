@@ -21,7 +21,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: generate tex
-      run: python generator.py tim0-12432
+      run: python generator.py tim0-12432 -e
 
     - name: generate pdf
       uses: xu-cheng/latex-action@2.2.1

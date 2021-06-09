@@ -149,11 +149,12 @@ class Api:
         return base64.b64decode(response["content"]) if response["content"] else ""
 
 class DocBuilder:
-    def __init__(self, user={}, repos=[], gists=[], timerange=(datetime.datetime.now().year - 1, datetime.datetime.now().year)):
+    def __init__(self, user={}, repos=[], gists=[], timerange=(datetime.datetime.now().year - 1, datetime.datetime.now().year), arguments={}):
         self.user = user
         self.timerange = timerange
         self.repos = self._check_timerange(repos)
         self.gists = self._check_timerange(gists)
+        self.args = arguments
         content = [
             Command("maketitle"),
             Command("tableofcontents"),
@@ -203,12 +204,13 @@ class DocBuilder:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
                 if len(languages) > 0:
-                    with self.document.create(Figure(position="htb")) as plot:
-                        bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
-                        bars.set(xlabel="Language", ylabel="Code in bytes")
-                        plt.savefig(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png")
-                        plot.add_image(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png", width=NoEscape(r"1\textwidth"))
-                        plot.add_caption("Language distribution")
+                    if "exclude" in self.args:
+                        with self.document.create(Figure(position="htb")) as plot:
+                            bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
+                            bars.set(xlabel="Language", ylabel="Code in bytes")
+                            plt.savefig(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png")
+                            plot.add_image(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png", width=NoEscape(r"1\textwidth"))
+                            plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
@@ -308,6 +310,7 @@ def main():
     parser.add_argument("user", metavar="user", type=str, help="the GitHub username to get the summary of")
     parser.add_argument("-i", "--intervall", metavar="intervall", type=str, default="YEAR", help="the intervall to get the summary of e.g. last YEAR*, MONTH")
     parser.add_argument("-e", "--endtime", metavar="end", type=str, default="TODAY", help="the endpoint until when to get the summary of e.g. TODAY*, 2635376")
+    parser.add_argument("-p", "--exclude-plots", action="store_true", help="the script will not generate plots")
     args = parser.parse_args()
     arguments = vars(args)
     timerange = parse_time(arguments)
@@ -316,7 +319,7 @@ def main():
     api.get_userinfo()
     api.get_repos()
     logger.info("Got all api infos!")
-    builder = DocBuilder(api.userinfo, api.repos, timerange=timerange)
+    builder = DocBuilder(api.userinfo, api.repos, timerange=timerange, arguments=arguments)
     logger.info("Generating latex structure...")
     builder.generate_structure()
     logger.info("Generating output file...")
