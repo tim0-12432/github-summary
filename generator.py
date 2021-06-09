@@ -11,7 +11,7 @@ import argparse
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pylatex import Document, Command, TextColor, Figure, NoEscape
+from pylatex import Document, Command, Figure, NoEscape
 from pylatex.base_classes.command import Options
 from pylatex.base_classes.latex_object import LatexObject
 from pylatex.package import Package
@@ -80,12 +80,12 @@ class Api:
             "users": "users/"
         }
         self.user = username
-        self.rate_limit = 100
+        self._rate_limit = 100
 
     def _get(self, url):
-        if self.rate_limit > 0:
+        if self._rate_limit > 0:
             request = requests.get(url)
-            self.rate_limit = int(request.headers.get("x-ratelimit-remaining"))
+            self._rate_limit = int(request.headers.get("x-ratelimit-remaining"))
             logger.debug(f"{request.url}, {request.status_code}")
             if request.status_code == 403:
                 logger.error(f"Wait until {datetime.datetime.utcfromtimestamp(int(request.headers.get('x-ratelimit-reset'))).strftime('%Y/%m/%d %H:%M:%S')} UTC to send new requests!")
