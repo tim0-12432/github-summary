@@ -252,7 +252,7 @@ class DocBuilder:
         other_languages = other_languages.replace(",", ", ")[:-2]
         with self.document.create(Section(repo["name"])):
             with self.document.create(Subsection("Statistics")):
-                self.document.append(CommandBaseBasic(f"\\faStar {get_amount(repo['stars'])}\t\\faEye {get_amount(repo['watchers'])}\t\\faShareAlt {get_amount(repo['forks'])}\t\\faDatabase {get_size(repo['size'])}\t{repo['license']}\\linebreak"))
+                self.document.append(CommandBaseBasic(f"\\faStar {get_amount(repo['stars'])}\t\\faEye {get_amount(repo['watchers'])}\t\\faShareAlt {get_amount(repo['forks'])}\t\\faDatabase {get_size(repo['size'])}\t{repo['license']}"))
             with self.document.create(Subsection("Description")):
                 self.document.append(repo["description"])
                 self.document.append(CommandBaseBasic(f"\\footnote{{{repo['url']}}}"))
