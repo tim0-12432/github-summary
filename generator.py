@@ -11,7 +11,7 @@ import argparse
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pylatex import Document, Command, TextColor, LineBreak, Figure, NoEscape
+from pylatex import Document, Command, TextColor, Figure, NoEscape
 from pylatex.base_classes.command import Options
 from pylatex.base_classes.latex_object import LatexObject
 from pylatex.package import Package
@@ -256,7 +256,6 @@ class DocBuilder:
             with self.document.create(Subsection("Description")):
                 self.document.append(repo["description"])
                 self.document.append(CommandBaseBasic(f"\\footnote{{{repo['url']}}}"))
-                self.document.append(LineBreak())
                 self.document.append(TextColor("gray", f"since {repo['created']}"))
             if len(repo["languages"]) > 0:
                 with self.document.create(Subsection("Languages")):

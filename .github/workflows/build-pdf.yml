@@ -28,7 +28,7 @@ jobs:
       with:
         root_file: generated.tex
         working_directory: output
-        args: -l
+        args: -f
 
     - name: upload artifact
       uses: actions/upload-artifact@v2
