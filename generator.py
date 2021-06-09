@@ -203,10 +203,11 @@ class DocBuilder:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
                 if len(languages) > 0:
-                    with self.document.create(Figure(position="htbp")) as plot:
+                    with self.document.create(Figure(position="htb")) as plot:
                         bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
                         bars.set(xlabel="Language", ylabel="Code in bytes")
-                        plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
+                        plt.savefig(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png")
+                        plot.add_image(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}bar-plot.png", width=NoEscape(r"1\textwidth"))
                         plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
