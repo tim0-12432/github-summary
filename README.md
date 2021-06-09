@@ -11,8 +11,8 @@ Of course you need to have python installed!
 basic execution: `python generator.py <username>`
 
 parameters:
-`-i, --intervall`: Sets intervall. `YEAR` or `MONTH`, default is year
-`-e, --endtime`: Sets endpoint. `TODAY` or specific datetime int e.g. `64853273685726`, default is today
+- `-i, --intervall`: Sets intervall. `YEAR` or `MONTH`, default is year
+- `-e, --endtime`: Sets endpoint. `TODAY` or specific datetime int e.g. `64853273685726`, default is today
 
 ## Known issues
 

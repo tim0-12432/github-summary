@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import requests
 import base64
 import datetime
@@ -24,6 +25,13 @@ matplotlib.use("Agg")
 
 with open(f"{os.path.dirname(os.path.abspath(__file__))}/config.json", "r") as file:
     config = json.load(file)
+
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(sys.modules["__main__"].__file__)
+if config["debug"]:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 def get_size(bytes, suffix="B"):
     factor = 1024
@@ -78,10 +86,9 @@ class Api:
         if self.rate_limit > 0:
             request = requests.get(url)
             self.rate_limit = int(request.headers.get("x-ratelimit-remaining"))
-            if config["debug"]:
-                logging.debug(request.url, request.status_code)
+            logger.debug(request.url, request.status_code)
             if request.status_code == 403:
-                logging.error(f"Wait until {datetime.datetime.utcfromtimestamp(int(request.headers.get('x-ratelimit-reset'))).strftime('%Y/%m/%d %H:%M:%S')} UTC to send new requests!")
+                logger.error(f"Wait until {datetime.datetime.utcfromtimestamp(int(request.headers.get('x-ratelimit-reset'))).strftime('%Y/%m/%d %H:%M:%S')} UTC to send new requests!")
             return request.json()
         return None
 
@@ -164,7 +171,7 @@ class DocBuilder:
         try:
             self.document.generate_pdf(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}generated")
         except subprocess.CalledProcessError:
-            logging.warning("Could not write pdf file! Trying to write latex file...")
+            logger.warning("Could not write pdf file! Trying to write latex file...")
             self.generate_tex_file()
 
     def generate_tex_file(self):
@@ -305,15 +312,15 @@ def main():
     args = parser.parse_args()
     arguments = vars(args)
     timerange = parse_time(arguments)
-    logging.info(f"Got following arguments: {arguments}")
+    logger.info(f"Got following arguments: {arguments}")
     api = Api(arguments["user"])
     api.get_userinfo()
     api.get_repos()
-    logging.info("Got all api infos!")
+    logger.info("Got all api infos!")
     builder = DocBuilder(api.userinfo, api.repos, timerange=timerange)
-    logging.info("Generating latex structure...")
+    logger.info("Generating latex structure...")
     builder.generate_structure()
-    logging.info("Generating output file...")
+    logger.info("Generating output file...")
     builder.generate_tex_file()
 
 if __name__ == '__main__':
