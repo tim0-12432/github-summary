@@ -202,12 +202,12 @@ class DocBuilder:
                 with self.document.create(Itemize()) as list:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
-                if len(languages) > 0:
-                    with self.document.create(Figure(position="htbp")) as plot:
-                        bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
-                        bars.set(xlabel="Language", ylabel="Code in bytes")
-                        plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
-                        plot.add_caption("Language distribution")
+                # if len(languages) > 0:
+                #     with self.document.create(Figure(position="htbp")) as plot:
+                #         bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
+                #         bars.set(xlabel="Language", ylabel="Code in bytes")
+                #         plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
+                #         plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
