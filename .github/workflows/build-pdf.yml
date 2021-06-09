@@ -28,11 +28,13 @@ jobs:
       with:
         root_file: generated.tex
         working_directory: output
-        args: -f
+        args: -f -pdf -file-line-error -halt-on-error -interaction=nonstopmode
 
     - name: upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: summary_tim0-12432
-        path: output/generated.pdf
+        path: |
+          output/generated.pdf
+          output/generated.log
         if-no-files-found: error
