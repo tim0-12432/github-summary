@@ -9,6 +9,7 @@ import logging
 import argparse
 import matplotlib
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pylatex import Document, Command, TextColor, NewLine, Figure, NoEscape
 from pylatex.base_classes.command import Options
 from pylatex.base_classes.latex_object import LatexObject
@@ -144,8 +145,8 @@ class DocBuilder:
     def __init__(self, user={}, repos=[], gists=[], timerange=(datetime.datetime.now().year - 1, datetime.datetime.now().year)):
         self.user = user
         self.timerange = timerange
-        self.repos = repos
-        self.gists = gists
+        self.repos = self._check_timerange(repos)
+        self.gists = self._check_timerange(gists)
         content = [
             Command("maketitle"),
             Command("tableofcontents"),
@@ -194,12 +195,12 @@ class DocBuilder:
                 with self.document.create(Itemize()) as list:
                     for lang, bytes in languages.items():
                         list.add_item(f"{lang}\t{get_size(bytes)}")
-                with self.document.create(Figure(position="htbp")) as plot:
-                    plt.plot([lang for lang in languages.keys()], [lang for lang in languages.values()])
-                    plt.ylabel("Code in bytes")
-                    plt.xlabel("Language")
-                    plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
-                    plot.add_caption("Language distribution")
+                if len(languages) > 0:
+                    with self.document.create(Figure(position="htbp")) as plot:
+                        bars = sns.barplot(x=[lang for lang in languages.keys()], y=[lang for lang in languages.values()])
+                        bars.set(xlabel="Language", ylabel="Code in bytes")
+                        plot.add_plot(width=NoEscape(r"1\textwidth"), dpi=300)
+                        plot.add_caption("Language distribution")
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
@@ -207,6 +208,18 @@ class DocBuilder:
         self.append_introduction()
         self.append_projects()
         self.append_summary()
+
+    def _check_timerange(self, list):
+        start = self.timerange[0]
+        end = self.timerange[1]
+        if str(start).isnumeric():
+            start = datetime.datetime(start, 1, 1).date()
+            end = datetime.datetime(end, 1, 1).date()
+        result = []
+        for item in list:
+            if parser.isoparse(item["updated"]).date() >= start and parser.isoparse(item["updated"]).date() < end:
+                result.append(item)
+        return result
 
     def _append_timeline(self):
         if str(self.timerange[0]).isnumeric():
@@ -244,6 +257,12 @@ class DocBuilder:
                         table.add_row(["Top used language:", bold(repo["languages"][0][0])])
                         if len(repo["languages"]) > 1:
                             table.add_row(["Other languages:", other_languages])
+            with self.document.create(Subsection("Activity")):
+                with self.document.create(Tabular("l l")) as table:
+                    table.add_row(["Creation:", parser.isoparse(repo["created"]).strftime("%Y-%m-%d")])
+                    table.add_row(["Last update:", parser.isoparse(repo["updated"]).strftime("%Y-%m-%d")])
+                    table.add_row(["Development:", str((parser.isoparse(repo["updated"]) - parser.isoparse(repo["created"])).days) + " days"])
+                    table.add_row(["Inactive since:", str((datetime.datetime.now().astimezone() - parser.isoparse(repo["updated"])).days) + " days"])
 
 def example():
     user = {
@@ -272,7 +291,7 @@ def example():
             "readme": "Hello there! Ick bin ein Berliner!"
         }
     ]
-    doc = DocBuilder(user, repos, timerange=(datetime.date(2021, 5, 9), datetime.date(2021, 6, 8)))
+    doc = DocBuilder(user, repos, timerange=(datetime.date(2020, 1, 9), datetime.date(2021, 6, 8)))
     doc.append_introduction()
     doc.append_projects()
     doc.append_summary()
@@ -298,4 +317,4 @@ def main():
     builder.generate_tex_file()
 
 if __name__ == '__main__':
-    main()
+    example()

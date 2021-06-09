@@ -16,7 +16,6 @@ parameters:
 
 ## Known issues
 
-- Currently the generator does not verify whether or not a repo is in the given timerange. This means it will print out all repos...
 
 ## Further information
 
