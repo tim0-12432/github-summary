@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from typing import Any, List, Tuple
 import requests
 import base64
 import datetime
@@ -33,14 +34,14 @@ if config["debug"]:
 else:
     logger.setLevel(logging.INFO)
 
-def get_size(bytes, suffix="B"):
+def get_size(bytes: int, suffix: str="B") -> str:
     factor = 1024
     for unit in ["", "K", "M", "G", "T", "P"]:
         if bytes < factor:
             return f"{bytes:.2f}{unit}{suffix}"
         bytes /= factor
 
-def get_amount(amount):
+def get_amount(amount: int) -> str:
     factor = 1000
     for unit in ["", "k", "m", "b", "tr"]:
         if amount < factor:
@@ -49,7 +50,7 @@ def get_amount(amount):
             return f"{amount:.2f}{unit}"
         amount /= factor
 
-def parse_time(args):
+def parse_time(args: dict) -> Tuple:
     timerange = ()
     intervall = args["intervall"]
     endtime = args["endtime"]
@@ -66,14 +67,14 @@ def parse_time(args):
     return timerange
 
 class CommandBaseBasic(LatexObject):
-    def __init__(self, command):
+    def __init__(self, command) -> None:
         self.command = command
 
-    def dumps(self):
+    def dumps(self) -> str:
         return f"{self.command}"
 
 class Api:
-    def __init__(self, username):
+    def __init__(self, username: str) -> None:
         self.urls = {
             "github": "https://api.github.com/",
             "repos": "repos/",
@@ -82,7 +83,7 @@ class Api:
         self.user = username
         self._rate_limit = 100
 
-    def _get(self, url):
+    def _get(self, url: str) -> Any:
         if self._rate_limit > 0:
             request = requests.get(url)
             self._rate_limit = int(request.headers.get("x-ratelimit-remaining"))
@@ -92,7 +93,7 @@ class Api:
             return request.json()
         return None
 
-    def get_userinfo(self):
+    def get_userinfo(self) -> None:
         response = self._get(f"{self.urls['github']}{self.urls['users']}{self.user}")
         self.userinfo = {
             "login": response["login"],
@@ -104,7 +105,7 @@ class Api:
             "repos": response["public_repos"]
         }
 
-    def get_repos(self):
+    def get_repos(self) -> None:
         response = self._get(f"{self.urls['github']}{self.urls['users']}{self.user}/repos")
         self.repos = []
         for resp in response:
@@ -124,7 +125,7 @@ class Api:
                 #"readme": self.get_readme(resp["url"])
             })
 
-    def get_gists(self):
+    def get_gists(self) -> None:
         response = self._get(f"{self.urls['github']}{self.urls['users']}{self.user}/gists")
         self.gists = []
         for resp in response:
@@ -137,19 +138,19 @@ class Api:
                 "updated": resp["updated_at"]
             })
 
-    def get_languages(self, url):
+    def get_languages(self, url: str) -> List:
         response = self._get(url)
         languages = []
         for language, bytes in response.items():
             languages.append((language, bytes))
         return languages
 
-    def get_readme(self, url):
+    def get_readme(self, url: str) -> bytes:
         response = self._get(f"{url}/readme")
         return base64.b64decode(response["content"]) if response["content"] else ""
 
 class DocBuilder:
-    def __init__(self, user={}, repos=[], gists=[], timerange=(datetime.datetime.now().year - 1, datetime.datetime.now().year), arguments={}):
+    def __init__(self, user: dict={}, repos: List=[], gists: List=[], timerange: Tuple=(datetime.datetime.now().year - 1, datetime.datetime.now().year), arguments: dict={}) -> None:
         self.user = user
         self.timerange = timerange
         self.repos = self._check_timerange(repos)
@@ -168,21 +169,21 @@ class DocBuilder:
         self.document.preamble.append(Command("author", "GitHub summary generator"))
         self.document.preamble.append(Command("date", datetime.datetime.now().strftime("%B %d, %Y")))
 
-    def generate_pdf_file(self):
+    def generate_pdf_file(self) -> None:
         try:
             self.document.generate_pdf(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}generated")
         except subprocess.CalledProcessError:
             logger.warning("Could not write pdf file! Trying to write latex file...")
             self.generate_tex_file()
 
-    def generate_tex_file(self):
+    def generate_tex_file(self) -> None:
         self.document.generate_tex(f"{os.path.dirname(os.path.abspath(__file__))}/{config['path']}generated")
 
-    def append_introduction(self):
+    def append_introduction(self) -> None:
         with self.document.create(Chapter("Introduction")):
             self.document.append(CommandBaseBasic(intro(self.user["name"], self.timerange, self.user["url"])))
 
-    def append_projects(self):
+    def append_projects(self) -> None:
         with self.document.create(Chapter("Projects")):
             self.document.append(CommandBaseBasic(projects(self.user["name"], self.timerange, self.user["repos"])))
             with self.document.create(Section("Timeline")):
@@ -190,7 +191,7 @@ class DocBuilder:
             for repo in self.repos:
                 self._append_repo(repo)
 
-    def append_summary(self):
+    def append_summary(self) -> None:
         languages = {}
         for repo in self.repos:
             for lang in repo["languages"]:
@@ -214,12 +215,12 @@ class DocBuilder:
             with self.document.create(Section("Technologies")):
                 self.document.append("Currently not available!")
 
-    def generate_structure(self):
+    def generate_structure(self) -> None:
         self.append_introduction()
         self.append_projects()
         self.append_summary()
 
-    def _check_timerange(self, list):
+    def _check_timerange(self, list: List) -> List:
         start = self.timerange[0]
         end = self.timerange[1]
         if str(start).isnumeric():
@@ -231,7 +232,7 @@ class DocBuilder:
                 result.append(item)
         return result
 
-    def _append_timeline(self):
+    def _append_timeline(self) -> None:
         if str(self.timerange[0]).isnumeric():
             start = self.timerange[0]
             end = self.timerange[1]
@@ -247,7 +248,7 @@ class DocBuilder:
                 self.document.append(CommandBaseBasic("\\chronoevent[year=False]{" + f"{created.day}/{created.month}/{created.year}" + "}{" + repo["name"] + "}"))
         self.document.append(Command("stopchronology"))
 
-    def _append_repo(self, repo):
+    def _append_repo(self, repo: dict) -> None:
         other_languages = ""
         for lang in repo["languages"]:
             if not lang == repo["languages"][0]:
@@ -272,7 +273,7 @@ class DocBuilder:
                     table.add_row(["Development:", str((parser.isoparse(repo["updated"]) - parser.isoparse(repo["created"])).days) + " days"])
                     table.add_row(["Inactive since:", str((datetime.datetime.now().astimezone() - parser.isoparse(repo["updated"])).days) + " days"])
 
-def example():
+def example() -> None:
     user = {
         "login": "test",
         "url": "https://test.github.com/test",
@@ -305,7 +306,7 @@ def example():
     doc.append_summary()
     doc.generate_tex_file()
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Generates a tex file summary about the given GitHub profile's projects.")
     parser.add_argument("user", metavar="user", type=str, help="the GitHub username to get the summary of")
     parser.add_argument("-i", "--intervall", metavar="intervall", type=str, default="YEAR", help="the intervall to get the summary of e.g. last YEAR*, MONTH")
